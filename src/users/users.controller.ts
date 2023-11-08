@@ -21,11 +21,16 @@ import {
 import { UserEntity } from './entities/user.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { User } from './user.decorator';
+import { SessionsService } from 'src/sessions/sessions.service';
+import { SessionEntity } from 'src/sessions/entities/session.entity';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly sessionsService: SessionsService,
+  ) {}
 
   @Post()
   @ApiCreatedResponse({ type: UserEntity })
@@ -56,6 +61,16 @@ export class UsersController {
   @ApiOkResponse({ type: UserEntity })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return new UserEntity(await this.usersService.findOne(id));
+  }
+
+  @Get('sessions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: SessionEntity, isArray: true })
+  async findSessions(@User() user: UserEntity) {
+    return (await this.sessionsService.findAllForAnUser(user.id)).map(
+      (session) => new SessionEntity(session),
+    );
   }
 
   @Patch(':id')
