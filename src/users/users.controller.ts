@@ -55,22 +55,22 @@ export class UsersController {
     return new UserEntity(user);
   }
 
+  @Get('sessions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: SessionEntity, isArray: true })
+  async findUserSession(@User() user: UserEntity) {
+    return (await this.sessionsService.findAllForAnUser(user.id)).map(
+      (session) => new SessionEntity(session),
+    );
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return new UserEntity(await this.usersService.findOne(id));
-  }
-
-  @Get('sessions')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: SessionEntity, isArray: true })
-  async findSessions(@User() user: UserEntity) {
-    return (await this.sessionsService.findAllForAnUser(user.id)).map(
-      (session) => new SessionEntity(session),
-    );
   }
 
   @Patch(':id')
