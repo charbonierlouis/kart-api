@@ -21,11 +21,15 @@ import {
 } from '@nestjs/swagger';
 import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { SessionPointsService } from 'src/session-points/session-points.service';
 
 @Controller('sessions')
 @ApiTags('sessions')
 export class SessionsController {
-  constructor(private readonly sessionsService: SessionsService) {}
+  constructor(
+    private readonly sessionsService: SessionsService,
+    private readonly sessionPointsService: SessionPointsService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -56,6 +60,16 @@ export class SessionsController {
   @ApiOkResponse({ type: SessionEntity })
   async findOne(@Param('id') id: string) {
     return new SessionEntity(await this.sessionsService.findOne(+id));
+  }
+
+  @Get(':id/points')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: SessionEntity, isArray: true })
+  async findSessionPoints(@Param('id') id: string) {
+    return (await this.sessionPointsService.findAllForASession(+id)).map(
+      (sessionPoint) => new SessionEntity(sessionPoint),
+    );
   }
 
   @Patch(':id')

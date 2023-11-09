@@ -17,6 +17,14 @@ export class SessionPointsService {
     return this.prisma.sessionPoint.findMany();
   }
 
+  findAllForASession(sessionId: number) {
+    return this.prisma.sessionPoint.findMany({
+      where: {
+        sessionId,
+      },
+    });
+  }
+
   findOne(id: number) {
     return this.prisma.sessionPoint.findUnique({ where: { id } });
   }
